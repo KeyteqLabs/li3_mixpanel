@@ -31,6 +31,58 @@ class Mixpanel extends \lithium\core\StaticObject {
     protected static $env;
 
     /**
+     * Track an increment to a people property
+     *
+     * @param string|int $id Distinct id for your user
+     * @param array $properties Key/value of property names and increment values
+     * @return boolean true on succeess, false otherwise
+     */
+    public static function increment($id, array $properties = array()) {
+        $payload = array(
+            '$add' => $properties,
+            '$distinct_id' => $id,
+        ) + static::defaults('$');
+        return static::async_call('/engage', $payload);
+    }
+
+    /**
+     * Track a transaction for Mixpanels specialized revenue tracking
+     *
+     * @param string|int $id Distinct id for your user
+     * @param float $sum Total transaction sum
+     * @param string|date $time Override the time the charge happened
+     * @return boolean true on succeess, false otherwise
+     */
+    public static function transaction($id, $sum, $time = null) {
+        return static::async_call('/engage', array(
+            '$append' => array(
+                '$transactions' => array(
+                    '$time' => $time ?: date('c'),
+                    '$amount' => $sum
+                )
+            ),
+            '$distinct_id' => $id
+        ) + static::defaults('$'));
+    }
+
+    /**
+     * Configure a user tied to a distinct_id and/or IP
+     *
+     * @param string|int $id Distinct id for your user
+     * @param array $data Values to set for the user
+     *        Certain special values are allowed, read about them at
+     *        https://mixpanel.com/docs/people-analytics/special-properties
+     * @return boolean true on succeess, false otherwise
+     */
+    public static function set($id, array $data = array()) {
+        $payload = array(
+            '$set' => $data,
+            '$distinct_id' => $id
+        ) + static::defaults('$');
+        return static::async_call('/engage', $payload);
+    }
+
+    /**
      * Tracks event in Mixpanel
      *
      * You can give more properties to analyze and drill down more information
@@ -44,12 +96,11 @@ class Mixpanel extends \lithium\core\StaticObject {
      * @return boolean true on succeess, false otherwise
      */
     public static function track($event, array $properties = array()) {
-        if (!static::isTracking())
-            return false;
         $properties += array(
-            'ip' => $_SERVER['REMOTE_ADDR']
+            'ip' => $_SERVER['REMOTE_ADDR'],
+            'token' => static::$_config['token']
         );
-        return static::async_call(compact('event', 'properties'));
+        return static::async_call('/track', compact('event', 'properties'));
     }
 
     /**
@@ -78,23 +129,25 @@ class Mixpanel extends \lithium\core\StaticObject {
      * failure of data submission. double-check your token and everything else
      * that can fail to make sure, everything works as expected.
      *
+     * @param string $path Absolute path to mixpanel api endpoint.
+     *        Can be one of the values `/track` or `/engange`
      * @param array $data all data to be submitted, must be in the form
      *        of an array, containing exactly two keys: `event` and `properties`
      *        which are of type string (event) and array (properties). You can
      *        submit whatever properties you like. If no token is given, it will
      *        be automatically appended from `static::$host` which can be set in
      *        advance like this: `Mixpanel::$token = 'foo';`
-     * @param array $options an array with additional options
      * @return boolean true on succeess, false otherwise
      *         actually, it just checks, if bytes sent is greater than zero. It
      *         does _NOT_ check in any way if data is recieved sucessfully in
      *         the endpoint and/or if given data is accepted by remote.
      */
-    public static function async_call(array $data = array(), array $options = array()) {
-        if (!isset($data['properties']['token'])){
-            $data['properties']['token'] = static::$_config['token'];
+    public static function async_call($path, array $data = array()) {
+        if (!static::isTracking()) {
+            return false;
         }
-        $url = '/track/?data=' . base64_encode(json_encode($data));
+
+        $url = $path . '?data=' . base64_encode(json_encode($data));
         $fp = fsockopen(static::$_config['host'], static::$_config['port'], $errno, $errstr, static::$_config['timeout']);
         if ($errno != 0) {
             // TODO: make something useful with error
@@ -117,17 +170,33 @@ class Mixpanel extends \lithium\core\StaticObject {
      * It is possible to filter tracking calls based on environment
      * and this method will make sure that is respected
      * @return bool
-     *
-     */
-    protected static function isTracking() {
+     **/
+    protected static function isTracking(){
         if (($env = static::$_config['env']) && $env === '*') {
             return true;
         }
         if (!static::$env) {
             static::$env = Environment::get();
         }
-        return is_array($env)
-            ? in_array(static::$env, $env)
-            : static::$env === $env;
+        return is_array($env) ? in_array(static::$env, $env) : static::$env === $env;
     }
+
+    protected static function defaults($prefix = '') {
+        $defaults = array(
+            'token' => static::$_config['token']
+        );
+        if ($_SERVER && isset($_SERVER['REMOTE_ADDR']))
+            $defaults['ip'] = $_SERVER['REMOTE_ADDR'];
+
+        if ($prefix) {
+            $values = array();
+            foreach ($defaults as $key => $val) {
+                $values[$prefix . $key] = $val;
+            }
+            return $values;
+        }
+
+        return $defaults;
+    }
+
 }
