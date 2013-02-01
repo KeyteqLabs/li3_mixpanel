@@ -2,6 +2,8 @@
 
 namespace li3_mixpanel\core;
 
+use lithium\core\Environment;
+
 /**
  * Client for sending data to Mixpanel
  *
