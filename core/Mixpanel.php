@@ -42,7 +42,7 @@ class Mixpanel extends \lithium\core\StaticObject {
             '$add' => $properties,
             '$distinct_id' => $id,
         ) + static::defaults('$');
-        return static::async_call('/engage', $payload);
+        return static::async_call('/engage/', $payload);
     }
 
     /**
@@ -54,7 +54,7 @@ class Mixpanel extends \lithium\core\StaticObject {
      * @return boolean true on succeess, false otherwise
      */
     public static function transaction($id, $sum, $time = null) {
-        return static::async_call('/engage', array(
+        $data = array(
             '$append' => array(
                 '$transactions' => array(
                     '$time' => $time ?: date('c'),
@@ -62,7 +62,8 @@ class Mixpanel extends \lithium\core\StaticObject {
                 )
             ),
             '$distinct_id' => $id
-        ) + static::defaults('$'));
+        ) + static::defaults('$');
+        return static::async_call('/engage/', $data);
     }
 
     /**
@@ -79,7 +80,7 @@ class Mixpanel extends \lithium\core\StaticObject {
             '$set' => $data,
             '$distinct_id' => $id
         ) + static::defaults('$');
-        return static::async_call('/engage', $payload);
+        return static::async_call('/engage/', $payload);
     }
 
     /**
