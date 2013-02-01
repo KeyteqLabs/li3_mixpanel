@@ -6,21 +6,43 @@ Lithium library for sending statistical data to [Mixpanel](https://mixpanel.com)
 
 Add a submodule to your li3 libraries:
 
-	git submodule add git@github.com:bruensicke/li3_mixpanel.git libraries/li3_mixpanel
+    git submodule add git@github.com:bruensicke/li3_mixpanel.git libraries/li3_mixpanel
 
 and activate it in you app (config/bootstrap/libraries.php), of course:
 
-	Libraries::add('li3_mixpanel');
+```php
+<?php
+Libraries::add('li3_mixpanel', array(
+    'token' => $token
+));
+```
 
-## Usage
+### Filtering track calls by environment
 
-### Preparation
+Send the `env` key when adding the library to only enable one or a set of environments.
+Passing `*` means enabling it for every environment.
 
-	Mixpanel::$token = 'de3b97e4e2807f5addb8c746c3a6f6e5';
+```php
+<?php
+Libraries::add('li3_mixpanel', array(
+    'token' => $token,
+    'env' => array('production', 'staging')
+));
+```
 
-### Sending data
+## Sending data
 
-	Mixpanel::track('api.requests', $params['request']->params);
+```php
+<?php
+Mixpanel::track('api.requests', $params['request']->params);
+// Track revenue
+Mixpanel::transaction($userId, $sum);
+// Track people by identifying the person
+Mixpanel::set($userId, array(
+    '$name' => $user->name,
+    '$username' => $user->username
+));
+```
 
 ## Credits
 
