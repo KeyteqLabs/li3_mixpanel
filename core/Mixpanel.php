@@ -58,7 +58,7 @@ class Mixpanel extends \lithium\core\StaticObject {
             '$append' => array(
                 '$transactions' => array(
                     '$time' => $time ?: date('c'),
-                    '$amount' => $sum
+                    '$amount' => number_format($sum, 2)
                 )
             ),
             '$distinct_id' => $id
