@@ -148,7 +148,14 @@ class Mixpanel extends \lithium\core\StaticObject {
             return false;
         }
 
-        $json = json_encode($data, JSON_NUMERIC_CHECK);
+        // Backwards support beyond 5.3.3 because the popular ubuntu 10.04
+        // contains 5.3.2
+        if (defined('JSON_NUMERIC_CHECK')) {
+            $json = json_encode($data, JSON_NUMERIC_CHECK);
+        }
+        else {
+            $json = preg_replace("/\"(\d+(\.\d*)?)\"/", '$1', json_encode($data));
+        }
         $url = $path . '?data=' . base64_encode($json);
         $fp = fsockopen(static::$_config['host'], static::$_config['port'], $errno, $errstr, static::$_config['timeout']);
         if ($errno != 0) {
