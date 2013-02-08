@@ -148,7 +148,8 @@ class Mixpanel extends \lithium\core\StaticObject {
             return false;
         }
 
-        $url = $path . '?data=' . base64_encode(json_encode($data));
+        $json = json_encode($data, JSON_NUMERIC_CHECK);
+        $url = $path . '?data=' . base64_encode($json);
         $fp = fsockopen(static::$_config['host'], static::$_config['port'], $errno, $errstr, static::$_config['timeout']);
         if ($errno != 0) {
             // TODO: make something useful with error
