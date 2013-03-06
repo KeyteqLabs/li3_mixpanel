@@ -1,10 +1,10 @@
 <?php
 
-namespace li3_mixpanel\tests\cases\core;
+namespace li3_mixpanel\tests\integration\core;
 
 use li3_mixpanel\core\Mixpanel;
 
-class MixpanelTest extends \lithium\test\unit {
+class MixpanelTest extends \lithium\test\Integration {
 
     protected $mixpanelConfiguration = array();
 
@@ -27,7 +27,7 @@ class MixpanelTest extends \lithium\test\unit {
 
     public function testRealSyncToMixpanel() {
         $message = "Set env variable MIXPANEL_TOKEN to test with real transactions";
-        $this->skipIf(!isset($this->mixpanelConfiguration['token']), $message);
+        $this->skipIf(!$this->mixpanelConfiguration['token'], $message);
         $mixpanel = new Mixpanel;
         $configuration = $mixpanel->configure($this->mixpanelConfiguration);
 
