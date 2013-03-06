@@ -1,3 +1,4 @@
 vendor/
 libraries/
 *.sw*
+composer.lock

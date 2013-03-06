@@ -13,12 +13,11 @@
     ],
     "minimum-stability" : "dev",
     "require" : {
-        "php" : ">=5.3.0",
-        "UnionOfRAD/lithium": "dev-dev",
-        "composer/installers": "*"
+        "php" : ">=5.3.2"
     },
     "require-dev" : {
-        "atoum/atoum" : "dev-master@dev"
+        "UnionOfRAD/lithium": "dev-dev",
+        "composer/installers": "*"
     },
     "autoload" : {
         "psr-0" : {
