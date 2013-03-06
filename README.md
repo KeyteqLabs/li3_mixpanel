@@ -4,11 +4,27 @@ Lithium library for sending statistical data to [Mixpanel](https://mixpanel.com)
 
 ## Installation
 
+### Composer
+
+```json
+{
+  "require" : {
+    "KeyteqLabs/li3_mixpanel" : "*"
+  }
+}
+```
+
+    composer.phar install
+
+### Submodule
+
 Add a submodule to your li3 libraries:
 
-    git submodule add git@github.com:bruensicke/li3_mixpanel.git libraries/li3_mixpanel
+    git submodule add git@github.com:KeyteqLabs/li3_mixpanel.git libraries/li3_mixpanel
 
-and activate it in you app (config/bootstrap/libraries.php), of course:
+### Activate it
+
+Add this to your app (config/bootstrap/libraries.php):
 
 ```php
 <?php
