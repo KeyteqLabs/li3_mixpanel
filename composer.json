@@ -1,0 +1,28 @@
+{
+    "name" : "KeyteqLabs/li3_mixpanel",
+    "type" : "lithium-library",
+    "description" : "Lithium Mixpanel integration",
+    "keywords" : ["lithium", "li3", "mixpanel", "plugin", "integration", "library"],
+    "license" : "MIT",
+    "authors" : [
+        {
+            "name" : "Raymond Julin",
+            "email" : "raymond.julin@gmail.com",
+            "homepage" : "http://raymondjulin.com"
+        }
+    ],
+    "minimum-stability" : "dev",
+    "require" : {
+        "php" : ">=5.3.0",
+        "UnionOfRAD/lithium": "dev-dev",
+        "composer/installers": "*"
+    },
+    "require-dev" : {
+        "atoum/atoum" : "dev-master@dev"
+    },
+    "autoload" : {
+        "psr-0" : {
+            "li3_mixpanel" : "./"
+        }
+    }
+}
