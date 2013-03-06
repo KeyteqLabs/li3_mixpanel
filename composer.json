@@ -1,5 +1,5 @@
 {
-    "name" : "KeyteqLabs/li3_mixpanel",
+    "name" : "keyteqlabs/li3_mixpanel",
     "type" : "lithium-library",
     "description" : "Lithium Mixpanel integration",
     "keywords" : ["lithium", "li3", "mixpanel", "plugin", "integration", "library"],
