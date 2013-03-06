@@ -10,6 +10,10 @@ use lithium\core\Environment;
  */
 class Mixpanel extends \lithium\core\StaticObject {
 
+    static $_classes = array(
+        'socket' => 'li3_mixpanel\extensions\net\socket\Push'
+    );
+
     /**
      * Configuration
      * 
@@ -97,10 +101,7 @@ class Mixpanel extends \lithium\core\StaticObject {
      * @return boolean true on succeess, false otherwise
      */
     public static function track($event, array $properties = array()) {
-        $properties += array(
-            'ip' => $_SERVER['REMOTE_ADDR'],
-            'token' => static::$_config['token']
-        );
+        $properties += static::defaults();
         return static::async_call('/track', compact('event', 'properties'));
     }
 
@@ -143,7 +144,7 @@ class Mixpanel extends \lithium\core\StaticObject {
      *         does _NOT_ check in any way if data is recieved sucessfully in
      *         the endpoint and/or if given data is accepted by remote.
      */
-    public static function async_call($path, array $data = array()) {
+    protected static function async_call($path, array $data = array()) {
         if (!static::isTracking()) {
             return false;
         }
@@ -156,21 +157,24 @@ class Mixpanel extends \lithium\core\StaticObject {
         else {
             $json = preg_replace("/\"(\d+(\.\d*)?)\"/", '$1', json_encode($data));
         }
-        $url = $path . '?data=' . base64_encode($json);
-        $fp = fsockopen(static::$_config['host'], static::$_config['port'], $errno, $errstr, static::$_config['timeout']);
-        if ($errno != 0) {
-            // TODO: make something useful with error
-            return false;
-        }
-        $out = array();
-        $out[] = sprintf('GET %s HTTP/1.1', $url);
-        $out[] = sprintf('Host: %s', static::$_config['host']);
-        $out[] = 'Accept: */*';
-        $out[] = 'Connection: close';
-        $out[] = '';
-        $bytes = fwrite($fp, implode("\r\n", $out));
-        fclose($fp);
-        return ($bytes > 0);
+
+
+        $socket = self::_instance('socket', self::$_config + array(
+            'scheme'=>'http'
+        ));
+        $socket->open();
+        $res = $socket->write(array(
+            'headers' => array(
+                'Accept' => '*/*'
+            ),
+            'path' => $path,
+            'query' => array('data' => base64_encode($json))
+        ));
+        // We actually need to wait 50ms to be more or less certain
+        // of Mixpanel actually having received the data
+        usleep(50000);
+        $socket->close();
+        return $res;
     }
 
     /**

@@ -25,12 +25,17 @@ class MixpanelTest extends \lithium\test\unit {
         $this->assertEqual('api.mixpanel.com', $configuration['host']);
     }
 
-    public function testTrack() {
+    public function testRealSyncToMixpanel() {
         $message = "Set env variable MIXPANEL_TOKEN to test with real transactions";
         $this->skipIf(!isset($this->mixpanelConfiguration['token']), $message);
         $mixpanel = new Mixpanel;
         $configuration = $mixpanel->configure($this->mixpanelConfiguration);
 
-        $mixpanel->track('test');
+        $options = array('ip'=>1,'test'=>1);
+        $result = $mixpanel->track('test', $options);
+        $this->assertTrue($result);
+
+        $result = $mixpanel->transaction(1, 1.6);
+        $this->assertTrue($result);
     }
 }
